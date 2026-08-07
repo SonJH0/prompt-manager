@@ -1,3 +1,33 @@
+import json
+import os
+
+DATA_FILE = "prompts.json"
+
+
+def load_prompts():
+    if not os.path.exists(DATA_FILE):
+        return []
+
+    try:
+        with open(DATA_FILE, "r", encoding="utf-8") as file:
+            prompts = json.load(file)
+
+            for prompt in prompts:
+                if "favorite" not in prompt:
+                    prompt["favorite"] = False
+
+            return prompts
+
+    except json.JSONDecodeError:
+        print("데이터 파일을 읽는 중 오류가 발생했습니다. 빈 목록으로 시작합니다.")
+        return []
+
+
+def save_prompts(prompts):
+    with open(DATA_FILE, "w", encoding="utf-8") as file:
+        json.dump(prompts, file, ensure_ascii=False, indent=4)
+
+
 def show_menu():
     print("\n===== 프롬프트 관리 프로그램 =====")
     print("1. 프롬프트 추가")
@@ -33,8 +63,8 @@ def list_prompts(prompts):
     print("\n===== 전체 프롬프트 목록 =====")
 
     for index, prompt in enumerate(prompts, start=1):
-        favorite_mark = "★" if prompt["favorite"] else "☆"
-        print(f"{index}. {favorite_mark} {prompt['title']} [{prompt['category']}]")
+        star = "★" if prompt["favorite"] else "☆"
+        print(f"{index}. {star} {prompt['title']} [{prompt['category']}]")
 
 
 def list_by_category(prompts):
@@ -57,8 +87,8 @@ def list_by_category(prompts):
     print(f"\n===== {category} 카테고리 목록 =====")
 
     for index, prompt in enumerate(filtered_prompts, start=1):
-        favorite_mark = "★" if prompt["favorite"] else "☆"
-        print(f"{index}. {favorite_mark} {prompt['title']} [{prompt['category']}]")
+        star = "★" if prompt["favorite"] else "☆"
+        print(f"{index}. {star} {prompt['title']} [{prompt['category']}]")
 
 
 def search_prompts(prompts):
@@ -68,78 +98,51 @@ def search_prompts(prompts):
 
     keyword = input("검색어를 입력하세요: ")
 
-    search_results = []
+    results = []
 
     for prompt in prompts:
-        title = prompt["title"]
-        category = prompt["category"]
-        content = prompt["content"]
+        if (
+            keyword.lower() in prompt["title"].lower()
+            or keyword.lower() in prompt["category"].lower()
+            or keyword.lower() in prompt["content"].lower()
+        ):
+            results.append(prompt)
 
-        if keyword in title or keyword in category or keyword in content:
-            search_results.append(prompt)
-
-    if len(search_results) == 0:
+    if len(results) == 0:
         print("검색 결과가 없습니다.")
         return
 
-    print(f"\n===== '{keyword}' 검색 결과 =====")
+    print("\n===== 검색 결과 =====")
 
-    for index, prompt in enumerate(search_results, start=1):
-        favorite_mark = "★" if prompt["favorite"] else "☆"
-        print(f"{index}. {favorite_mark} {prompt['title']} [{prompt['category']}]")
+    for index, prompt in enumerate(results, start=1):
+        star = "★" if prompt["favorite"] else "☆"
+        print(f"{index}. {star} {prompt['title']} [{prompt['category']}]")
 
 
-def show_prompt_detail(prompts):
+def show_detail(prompts):
     if len(prompts) == 0:
         print("저장된 프롬프트가 없습니다.")
         return
 
-    print("\n===== 상세 보기할 프롬프트 선택 =====")
+    list_prompts(prompts)
 
-    for index, prompt in enumerate(prompts, start=1):
-        favorite_mark = "★" if prompt["favorite"] else "☆"
-        print(f"{index}. {favorite_mark} {prompt['title']} [{prompt['category']}]")
+    try:
+        number = int(input("상세 보기할 번호를 입력하세요: "))
 
-    selected = input("상세 보기할 번호를 입력하세요: ")
+        if number < 1 or number > len(prompts):
+            print("잘못된 번호입니다.")
+            return
 
-    if not selected.isdigit():
+        prompt = prompts[number - 1]
+
+        print("\n===== 프롬프트 상세 정보 =====")
+        print(f"제목: {prompt['title']}")
+        print(f"카테고리: {prompt['category']}")
+        print(f"즐겨찾기: {'등록됨' if prompt['favorite'] else '등록 안 됨'}")
+        print(f"내용: {prompt['content']}")
+
+    except ValueError:
         print("숫자를 입력해주세요.")
-        return
-
-    selected_index = int(selected) - 1
-
-    if selected_index < 0 or selected_index >= len(prompts):
-        print("존재하지 않는 번호입니다.")
-        return
-
-    prompt = prompts[selected_index]
-
-    print("\n===== 프롬프트 상세 정보 =====")
-    print(f"제목: {prompt['title']}")
-    print(f"카테고리: {prompt['category']}")
-    print(f"내용: {prompt['content']}")
-
-    if prompt["favorite"]:
-        print("즐겨찾기: 등록됨")
-    else:
-        print("즐겨찾기: 등록 안 됨")
-
-
-def list_favorite_prompts(prompts):
-    favorite_prompts = []
-
-    for prompt in prompts:
-        if prompt["favorite"]:
-            favorite_prompts.append(prompt)
-
-    if len(favorite_prompts) == 0:
-        print("즐겨찾기 등록된 프롬프트가 없습니다.")
-        return
-
-    print("\n===== 즐겨찾기 목록 =====")
-
-    for index, prompt in enumerate(favorite_prompts, start=1):
-        print(f"{index}. ★ {prompt['title']} [{prompt['category']}]")
 
 
 def toggle_favorite(prompts):
@@ -150,29 +153,43 @@ def toggle_favorite(prompts):
     print("\n===== 즐겨찾기 등록/해제 =====")
 
     for index, prompt in enumerate(prompts, start=1):
-        favorite_mark = "★" if prompt["favorite"] else "☆"
-        print(f"{index}. {favorite_mark} {prompt['title']} [{prompt['category']}]")
+        star = "★" if prompt["favorite"] else "☆"
+        print(f"{index}. {star}{prompt['title']} [{prompt['category']}]")
 
-    selected = input("즐겨찾기를 변경할 번호를 입력하세요: ")
+    try:
+        number = int(input("즐겨찾기를 변경할 번호를 입력하세요: "))
 
-    if not selected.isdigit():
+        if number < 1 or number > len(prompts):
+            print("잘못된 번호입니다.")
+            return
+
+        prompt = prompts[number - 1]
+        prompt["favorite"] = not prompt["favorite"]
+
+        if prompt["favorite"]:
+            print(f"'{prompt['title']}' 프롬프트가 즐겨찾기에 등록되었습니다.")
+        else:
+            print(f"'{prompt['title']}' 프롬프트가 즐겨찾기에서 해제되었습니다.")
+
+    except ValueError:
         print("숫자를 입력해주세요.")
+
+
+def list_favorites(prompts):
+    favorites = []
+
+    for prompt in prompts:
+        if prompt["favorite"]:
+            favorites.append(prompt)
+
+    if len(favorites) == 0:
+        print("즐겨찾기한 프롬프트가 없습니다.")
         return
 
-    selected_index = int(selected) - 1
+    print("\n===== 즐겨찾기 목록 =====")
 
-    if selected_index < 0 or selected_index >= len(prompts):
-        print("존재하지 않는 번호입니다.")
-        return
-
-    prompt = prompts[selected_index]
-
-    prompt["favorite"] = not prompt["favorite"]
-
-    if prompt["favorite"]:
-        print(f"'{prompt['title']}' 프롬프트가 즐겨찾기에 등록되었습니다.")
-    else:
-        print(f"'{prompt['title']}' 프롬프트가 즐겨찾기에서 해제되었습니다.")
+    for index, prompt in enumerate(favorites, start=1):
+        print(f"{index}. ★ {prompt['title']} [{prompt['category']}]")
 
 
 def manage_favorites(prompts):
@@ -186,9 +203,10 @@ def manage_favorites(prompts):
 
         if choice == "1":
             toggle_favorite(prompts)
+            save_prompts(prompts)
 
         elif choice == "2":
-            list_favorite_prompts(prompts)
+            list_favorites(prompts)
 
         elif choice == "0":
             break
@@ -198,7 +216,7 @@ def manage_favorites(prompts):
 
 
 def main():
-    prompts = []
+    prompts = load_prompts()
 
     while True:
         show_menu()
@@ -206,6 +224,7 @@ def main():
 
         if choice == "1":
             add_prompt(prompts)
+            save_prompts(prompts)
 
         elif choice == "2":
             list_prompts(prompts)
@@ -217,12 +236,14 @@ def main():
             search_prompts(prompts)
 
         elif choice == "5":
-            show_prompt_detail(prompts)
+            show_detail(prompts)
 
         elif choice == "6":
             manage_favorites(prompts)
+            save_prompts(prompts)
 
         elif choice == "0":
+            save_prompts(prompts)
             print("프로그램을 종료합니다.")
             break
 
