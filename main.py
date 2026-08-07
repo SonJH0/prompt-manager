@@ -59,6 +59,33 @@ def list_by_category(prompts):
         print(f"{index}. {prompt['title']} [{prompt['category']}]")
 
 
+def search_prompts(prompts):
+    if len(prompts) == 0:
+        print("저장된 프롬프트가 없습니다.")
+        return
+
+    keyword = input("검색어를 입력하세요: ")
+
+    search_results = []
+
+    for prompt in prompts:
+        title = prompt["title"]
+        category = prompt["category"]
+        content = prompt["content"]
+
+        if keyword in title or keyword in category or keyword in content:
+            search_results.append(prompt)
+
+    if len(search_results) == 0:
+        print("검색 결과가 없습니다.")
+        return
+
+    print(f"\n===== '{keyword}' 검색 결과 =====")
+
+    for index, prompt in enumerate(search_results, start=1):
+        print(f"{index}. {prompt['title']} [{prompt['category']}]")
+
+
 def main():
     prompts = []
 
@@ -76,7 +103,7 @@ def main():
             list_by_category(prompts)
 
         elif choice == "4":
-            print("프롬프트 검색 기능은 준비 중입니다.")
+            search_prompts(prompts)
 
         elif choice == "5":
             print("상세 보기 기능은 준비 중입니다.")
