@@ -36,6 +36,29 @@ def list_prompts(prompts):
         print(f"{index}. {prompt['title']} [{prompt['category']}]")
 
 
+def list_by_category(prompts):
+    if len(prompts) == 0:
+        print("저장된 프롬프트가 없습니다.")
+        return
+
+    category = input("조회할 카테고리를 입력하세요: ")
+
+    filtered_prompts = []
+
+    for prompt in prompts:
+        if prompt["category"] == category:
+            filtered_prompts.append(prompt)
+
+    if len(filtered_prompts) == 0:
+        print("해당 카테고리의 프롬프트가 없습니다.")
+        return
+
+    print(f"\n===== {category} 카테고리 목록 =====")
+
+    for index, prompt in enumerate(filtered_prompts, start=1):
+        print(f"{index}. {prompt['title']} [{prompt['category']}]")
+
+
 def main():
     prompts = []
 
@@ -50,7 +73,7 @@ def main():
             list_prompts(prompts)
 
         elif choice == "3":
-            print("카테고리별 조회 기능은 준비 중입니다.")
+            list_by_category(prompts)
 
         elif choice == "4":
             print("프롬프트 검색 기능은 준비 중입니다.")
