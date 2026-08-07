@@ -86,6 +86,41 @@ def search_prompts(prompts):
         print(f"{index}. {prompt['title']} [{prompt['category']}]")
 
 
+def show_prompt_detail(prompts):
+    if len(prompts) == 0:
+        print("저장된 프롬프트가 없습니다.")
+        return
+
+    print("\n===== 상세 보기할 프롬프트 선택 =====")
+
+    for index, prompt in enumerate(prompts, start=1):
+        print(f"{index}. {prompt['title']} [{prompt['category']}]")
+
+    selected = input("상세 보기할 번호를 입력하세요: ")
+
+    if not selected.isdigit():
+        print("숫자를 입력해주세요.")
+        return
+
+    selected_index = int(selected) - 1
+
+    if selected_index < 0 or selected_index >= len(prompts):
+        print("존재하지 않는 번호입니다.")
+        return
+
+    prompt = prompts[selected_index]
+
+    print("\n===== 프롬프트 상세 정보 =====")
+    print(f"제목: {prompt['title']}")
+    print(f"카테고리: {prompt['category']}")
+    print(f"내용: {prompt['content']}")
+
+    if prompt["favorite"]:
+        print("즐겨찾기: 등록됨")
+    else:
+        print("즐겨찾기: 등록 안 됨")
+
+
 def main():
     prompts = []
 
@@ -106,7 +141,7 @@ def main():
             search_prompts(prompts)
 
         elif choice == "5":
-            print("상세 보기 기능은 준비 중입니다.")
+            show_prompt_detail(prompts)
 
         elif choice == "6":
             print("즐겨찾기 관리 기능은 준비 중입니다.")
