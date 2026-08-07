@@ -25,6 +25,17 @@ def add_prompt(prompts):
     print("프롬프트가 추가되었습니다.")
 
 
+def list_prompts(prompts):
+    if len(prompts) == 0:
+        print("저장된 프롬프트가 없습니다.")
+        return
+
+    print("\n===== 전체 프롬프트 목록 =====")
+
+    for index, prompt in enumerate(prompts, start=1):
+        print(f"{index}. {prompt['title']} [{prompt['category']}]")
+
+
 def main():
     prompts = []
 
@@ -36,7 +47,7 @@ def main():
             add_prompt(prompts)
 
         elif choice == "2":
-            print("전체 목록 보기 기능은 준비 중입니다.")
+            list_prompts(prompts)
 
         elif choice == "3":
             print("카테고리별 조회 기능은 준비 중입니다.")
