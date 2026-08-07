@@ -13,19 +13,19 @@ def load_prompts():
         with open(DATA_FILE, "r", encoding="utf-8") as file:
             prompts = json.load(file)
 
-            if not isinstance(prompts, list):
-                return []
+        if not isinstance(prompts, list):
+            return []
 
-            for prompt in prompts:
-                prompt.setdefault("title", "")
-                prompt.setdefault("category", "")
-                prompt.setdefault("content", "")
-                prompt.setdefault("favorite", False)
+        for prompt in prompts:
+            prompt.setdefault("title", "")
+            prompt.setdefault("category", "")
+            prompt.setdefault("content", "")
+            prompt.setdefault("favorite", False)
 
-            return prompts
+        return prompts
 
     except json.JSONDecodeError:
-        print("prompts.json 파일을 읽는 중 오류가 발생했습니다.")
+        print("데이터 파일을 읽는 중 오류가 발생했습니다.")
         return []
 
 
@@ -43,17 +43,18 @@ def show_menu():
     print("5. 상세 보기")
     print("6. 즐겨찾기 관리")
     print("7. 프롬프트 삭제")
+    print("8. 프롬프트 수정")
     print("0. 종료")
 
 
 def add_prompt(prompts):
     print("\n===== 프롬프트 추가 =====")
 
-    title = input("제목을 입력하세요: ")
-    category = input("카테고리를 입력하세요: ")
-    content = input("프롬프트 내용을 입력하세요: ")
+    title = input("제목을 입력하세요: ").strip()
+    category = input("카테고리를 입력하세요: ").strip()
+    content = input("프롬프트 내용을 입력하세요: ").strip()
 
-    if title.strip() == "" or category.strip() == "" or content.strip() == "":
+    if title == "" or category == "" or content == "":
         print("제목, 카테고리, 내용은 비워둘 수 없습니다.")
         return
 
@@ -90,14 +91,19 @@ def view_by_category(prompts):
         print("등록된 프롬프트가 없습니다.")
         return
 
-    category = input("조회할 카테고리를 입력하세요: ")
+    category = input("조회할 카테고리를 입력하세요: ").strip().lower()
 
     found = False
 
     for index, prompt in enumerate(prompts, start=1):
-        if prompt.get("category", "").lower() == category.lower():
+        prompt_category = prompt.get("category", "").lower()
+
+        if prompt_category == category:
             favorite_mark = "★ " if prompt.get("favorite", False) else ""
-            print(f"{index}. {favorite_mark}{prompt.get('title', '')} [{prompt.get('category', '')}]")
+            title = prompt.get("title", "")
+            original_category = prompt.get("category", "")
+
+            print(f"{index}. {favorite_mark}{title} [{original_category}]")
             found = True
 
     if not found:
@@ -111,7 +117,11 @@ def search_prompts(prompts):
         print("등록된 프롬프트가 없습니다.")
         return
 
-    keyword = input("검색어를 입력하세요: ").lower()
+    keyword = input("검색어를 입력하세요: ").strip().lower()
+
+    if keyword == "":
+        print("검색어를 입력해주세요.")
+        return
 
     found = False
 
@@ -120,7 +130,11 @@ def search_prompts(prompts):
         category = prompt.get("category", "")
         content = prompt.get("content", "")
 
-        if keyword in title.lower() or keyword in category.lower() or keyword in content.lower():
+        if (
+            keyword in title.lower()
+            or keyword in category.lower()
+            or keyword in content.lower()
+        ):
             favorite_mark = "★ " if prompt.get("favorite", False) else ""
             print(f"{index}. {favorite_mark}{title} [{category}]")
             found = True
@@ -217,13 +231,58 @@ def delete_prompt(prompts):
         print("숫자를 입력해주세요.")
 
 
+def edit_prompt(prompts):
+    print("\n===== 프롬프트 수정 =====")
+
+    if len(prompts) == 0:
+        print("수정할 프롬프트가 없습니다.")
+        return
+
+    list_prompts(prompts)
+
+    try:
+        number = int(input("수정할 프롬프트 번호를 입력하세요: "))
+
+        if number < 1 or number > len(prompts):
+            print("잘못된 번호입니다.")
+            return
+
+        prompt = prompts[number - 1]
+
+        print("\n현재 정보")
+        print(f"제목: {prompt.get('title', '')}")
+        print(f"카테고리: {prompt.get('category', '')}")
+        print(f"내용: {prompt.get('content', '')}")
+
+        print("\n새로운 값을 입력하세요.")
+        print("그대로 두려면 Enter만 누르세요.")
+
+        new_title = input("새 제목: ").strip()
+        new_category = input("새 카테고리: ").strip()
+        new_content = input("새 내용: ").strip()
+
+        if new_title != "":
+            prompt["title"] = new_title
+
+        if new_category != "":
+            prompt["category"] = new_category
+
+        if new_content != "":
+            prompt["content"] = new_content
+
+        print("프롬프트가 수정되었습니다.")
+
+    except ValueError:
+        print("숫자를 입력해주세요.")
+
+
 def main():
     prompts = load_prompts()
 
     while True:
         show_menu()
 
-        choice = input("메뉴를 선택하세요: ")
+        choice = input("메뉴를 선택하세요: ").strip()
 
         if choice == "1":
             add_prompt(prompts)
@@ -247,6 +306,10 @@ def main():
 
         elif choice == "7":
             delete_prompt(prompts)
+            save_prompts(prompts)
+
+        elif choice == "8":
+            edit_prompt(prompts)
             save_prompts(prompts)
 
         elif choice == "0":
