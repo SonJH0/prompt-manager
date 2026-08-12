@@ -1,0 +1,23 @@
+[
+    {
+        "title": "블로그 글 작성(수정본)",
+        "category": "글쓰기",
+        "content": "깔끔하고 담백하게 적어줘",
+        "favorite": true,
+        "views": 1
+    },
+    {
+        "title": "이메일 작성",
+        "category": "업무",
+        "content": "정중한 메일을 작성해주세요.",
+        "favorite": false,
+        "views": 0
+    },
+    {
+        "title": "보고서 작성",
+        "category": "업무",
+        "content": "깔끔한 보고서를 작성해주세요.",
+        "favorite": false,
+        "views": 0
+    }
+]
